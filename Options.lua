@@ -1,10 +1,10 @@
-local _, addon = ...
+local _, WB = ...
 
 local AceConfig = LibStub("AceConfig-3.0", true)
 local AceConfigDialog = LibStub("AceConfigDialog-3.0", true)
 
 if not AceConfig or not AceConfigDialog then
-  local title = (addon and (addon.ADDON_TITLE or "Wangbar")) or "Wangbar"
+  local title = (WB and (WB.ADDON_TITLE or "Wangbar")) or "Wangbar"
   print(title .. ": Ace libraries not found; options menu unavailable. go download ace3 from curseforge.com :)")
   return
 end
@@ -26,7 +26,7 @@ for i = 1, #borderColorOptions do
 end
 
 local function GetDB()
-  return SnapComboPointsDB or addon.defaults or {}
+  return SnapComboPointsDB or WB.defaults or {}
 end
 
 local function FindBorderColorName(color)
@@ -53,40 +53,40 @@ local function GetBorderColorValue(name)
 end
 
 local function RefreshCombo()
-  if addon.LayoutBars then
-    local comboPowerType = addon.GetSecondaryType()
-    addon.LayoutBars(UnitPowerMax("player", comboPowerType) or 0)
+  if WB.LayoutBars then
+    local comboPowerType = WB.GetSecondaryType()
+    WB.LayoutBars(UnitPowerMax("player", comboPowerType) or 0)
   end
-  if addon.UpdateComboDisplay then
-    addon.UpdateComboDisplay()
+  if WB.UpdateComboDisplay then
+    WB.UpdateComboDisplay()
   end
 end
 
 local function RefreshEnergy()
-  if addon.ApplyFrameStyle then
-    addon.ApplyFrameStyle()
+  if WB.ApplyFrameStyle then
+    WB.ApplyFrameStyle()
   end
-  if addon.UpdateEnergyDisplay then
-    addon.UpdateEnergyDisplay()
+  if WB.UpdateEnergyDisplay then
+    WB.UpdateEnergyDisplay()
   end
 end
 
 local function RefreshAll()
-  if addon.ApplyFrameStyle then
-    addon.ApplyFrameStyle()
+  if WB.ApplyFrameStyle then
+    WB.ApplyFrameStyle()
   end
-  if addon.ApplyFrameSizeAndPosition then
-    addon.ApplyFrameSizeAndPosition()
+  if WB.ApplyFrameSizeAndPosition then
+    WB.ApplyFrameSizeAndPosition()
   end
   RefreshCombo()
   RefreshEnergy()
 end
 
 local function GetFontList()
-  if addon.InitLSM then
-    addon.InitLSM()
+  if WB.InitLSM then
+    WB.InitLSM()
   end
-  local lsm = addon.GetLSM and addon.GetLSM() or nil
+  local lsm = WB.GetLSM and WB.GetLSM() or nil
   local list = {}
   if lsm and lsm.List then
     list = lsm:List("font") or {}
@@ -105,10 +105,10 @@ end
 local function SetFontByName(name)
   local db = GetDB()
   if not SnapComboPointsDB then return end
-  if addon.InitLSM then
-    addon.InitLSM()
+  if WB.InitLSM then
+    WB.InitLSM()
   end
-  local lsm = addon.GetLSM and addon.GetLSM() or nil
+  local lsm = WB.GetLSM and WB.GetLSM() or nil
   if lsm and lsm.Fetch and name ~= "Default" then
     db.countFont = lsm:Fetch("font", name)
     db.countFontName = name
@@ -116,21 +116,21 @@ local function SetFontByName(name)
     db.countFont = db.countFont or "Fonts\\FRIZQT__.TTF"
     db.countFontName = "Default"
   end
-  if addon.ApplyFrameStyle then
-    addon.ApplyFrameStyle()
+  if WB.ApplyFrameStyle then
+    WB.ApplyFrameStyle()
   end
-  if addon.UpdateComboDisplay then
-    addon.UpdateComboDisplay()
+  if WB.UpdateComboDisplay then
+    WB.UpdateComboDisplay()
   end
 end
 
 local function SetEnergyFontByName(name)
   local db = GetDB()
   if not SnapComboPointsDB then return end
-  if addon.InitLSM then
-    addon.InitLSM()
+  if WB.InitLSM then
+    WB.InitLSM()
   end
-  local lsm = addon.GetLSM and addon.GetLSM() or nil
+  local lsm = WB.GetLSM and WB.GetLSM() or nil
   if lsm and lsm.Fetch and name ~= "Default" then
     db.energyCountFont = lsm:Fetch("font", name)
     db.energyCountFontName = name
@@ -138,18 +138,18 @@ local function SetEnergyFontByName(name)
     db.energyCountFont = db.energyCountFont or "Fonts\\FRIZQT__.TTF"
     db.energyCountFontName = "Default"
   end
-  if addon.ApplyFrameStyle then
-    addon.ApplyFrameStyle()
+  if WB.ApplyFrameStyle then
+    WB.ApplyFrameStyle()
   end
-  if addon.UpdateEnergyDisplay then
-    addon.UpdateEnergyDisplay()
+  if WB.UpdateEnergyDisplay then
+    WB.UpdateEnergyDisplay()
   end
 end
 
 
 local function GetStatusbarValues()
-  if addon.GetStatusbarList then
-    local list = addon.GetStatusbarList() or {}
+  if WB.GetStatusbarList then
+    local list = WB.GetStatusbarList() or {}
     local values = {}
     for i = 1, #list do
       values[list[i]] = list[i]
@@ -161,7 +161,7 @@ end
 
 local function BuildPerPointArgs()
   local args = {}
-  local maxPoints = addon.GetMaxComboPoints and addon.GetMaxComboPoints() or 7
+  local maxPoints = WB.GetMaxComboPoints and WB.GetMaxComboPoints() or 7
   if maxPoints < 1 then maxPoints = 7 end
   for i = 1, maxPoints do
     args["point" .. i] = {
@@ -197,7 +197,7 @@ end
 
 local options = {
   type = "group",
-  name = addon.ADDON_TITLE or "Wangbar",
+  name = WB.ADDON_TITLE or "Wangbar",
   childGroups = "tab",
   args = {
     welcome = {
@@ -227,8 +227,8 @@ local options = {
           order = 3,
           width = "full",
           func = function()
-            if addon and addon.EnsureOptionsPanel then
-              addon.EnsureOptionsPanel()
+            if addon and WB.EnsureOptionsPanel then
+              WB.EnsureOptionsPanel()
             end
             AceConfigDialog:Open("Wangbar")
             AceConfigDialog:SelectGroup("Wangbar", "layoutText", "layout")
@@ -346,8 +346,8 @@ local options = {
           set = function(_, value)
             if not SnapComboPointsDB then return end
             SnapComboPointsDB.energyEnabled = value and true or false
-            if addon.ApplyFrameSizeAndPosition then
-              addon.ApplyFrameSizeAndPosition()
+            if WB.ApplyFrameSizeAndPosition then
+              WB.ApplyFrameSizeAndPosition()
             end
             RefreshEnergy()
           end,
@@ -385,7 +385,7 @@ local options = {
               if type(SnapComboPointsDB.perPointColors) ~= "table" then
                 SnapComboPointsDB.perPointColors = {}
               end
-              local maxPoints = addon.GetMaxComboPoints and addon.GetMaxComboPoints() or 7
+              local maxPoints = WB.GetMaxComboPoints and WB.GetMaxComboPoints() or 7
               if maxPoints < 1 then maxPoints = 7 end
               for i = 1, maxPoints do
                 SnapComboPointsDB.perPointColors[i] = { r, g, b, a or 1 }
@@ -411,12 +411,12 @@ local options = {
           name = "Open Edit Mode",
           order = 996,
           func = function()
-            if addon and addon.ToggleDebugPanel then
-              addon.ToggleDebugPanel()
-            elseif addon and addon.ShowEditPanel then
-              addon.ShowEditPanel()
+            if addon and WB.ToggleDebugPanel then
+              WB.ToggleDebugPanel()
+            elseif addon and WB.ShowEditPanel then
+              WB.ShowEditPanel()
             else
-              print(((addon and (addon.ADDON_TITLE or "Wangbar")) or "Wangbar") .. ": Edit mode unavailable.")
+              print(((addon and (WB.ADDON_TITLE or "Wangbar")) or "Wangbar") .. ": Edit mode unavailable.")
             end
           end,
         },
@@ -484,8 +484,8 @@ local options = {
                   SnapComboPointsDB.emptyColor = { er or 0, eg or 0, eb or 0, value }
                 end
                 RefreshCombo()
-                if addon.ApplyFrameStyle then
-                  addon.ApplyFrameStyle()
+                if WB.ApplyFrameStyle then
+                  WB.ApplyFrameStyle()
                 end
               end,
             },
@@ -515,8 +515,8 @@ local options = {
                 if not SnapComboPointsDB then return end
                 SnapComboPointsDB.energyBorderSize = value
                 RefreshEnergy()
-                if addon.ApplyFrameSizeAndPosition then
-                  addon.ApplyFrameSizeAndPosition()
+                if WB.ApplyFrameSizeAndPosition then
+                  WB.ApplyFrameSizeAndPosition()
                 end
               end,
             },
@@ -535,8 +535,8 @@ local options = {
                 if not SnapComboPointsDB then return end
                 local color = SnapComboPointsDB.energyBg or {0,0,0,0}
                 SnapComboPointsDB.energyBg = { color[1] or 0, color[2] or 0, color[3] or 0, value }
-                if addon.ApplyFrameStyle then
-                  addon.ApplyFrameStyle()
+                if WB.ApplyFrameStyle then
+                  WB.ApplyFrameStyle()
                 end
                 RefreshEnergy()
               end,
@@ -557,11 +557,11 @@ local options = {
               get = function() return GetDB().textureName or "" end,
               set = function(_, value)
                 if not SnapComboPointsDB then return end
-                local path = addon.FetchStatusbar and addon.FetchStatusbar(value) or nil
+                local path = WB.FetchStatusbar and WB.FetchStatusbar(value) or nil
                 SnapComboPointsDB.textureName = value
                 SnapComboPointsDB.texture = path or SnapComboPointsDB.texture
-                if addon.ApplyComboTexture then
-                  addon.ApplyComboTexture(SnapComboPointsDB.texture)
+                if WB.ApplyComboTexture then
+                  WB.ApplyComboTexture(SnapComboPointsDB.texture)
                 end
                 RefreshCombo()
               end,
@@ -574,11 +574,11 @@ local options = {
               get = function() return GetDB().energyTextureName or "" end,
               set = function(_, value)
                 if not SnapComboPointsDB then return end
-                local path = addon.FetchStatusbar and addon.FetchStatusbar(value) or nil
+                local path = WB.FetchStatusbar and WB.FetchStatusbar(value) or nil
                 SnapComboPointsDB.energyTextureName = value
                 SnapComboPointsDB.energyTexture = path or SnapComboPointsDB.energyTexture
-                if addon.ApplyEnergyTexture then
-                  addon.ApplyEnergyTexture(SnapComboPointsDB.energyTexture)
+                if WB.ApplyEnergyTexture then
+                  WB.ApplyEnergyTexture(SnapComboPointsDB.energyTexture)
                 end
                 RefreshEnergy()
               end,
@@ -711,8 +711,8 @@ local options = {
                 SnapComboPointsDB.autoSizeToCDM = value and true or false
                 -- clear any cached CDM name when toggling autosize to avoid stale references
                 SnapComboPointsDB.autoSizeCDMName = ""
-                if addon.ApplyFrameSizeAndPosition then
-                  addon.ApplyFrameSizeAndPosition()
+                if WB.ApplyFrameSizeAndPosition then
+                  WB.ApplyFrameSizeAndPosition()
                 end
               end,
             },
@@ -730,8 +730,8 @@ local options = {
                   SnapComboPointsDB.y = 0
                   SnapComboPointsDB._anchorInitialized = true
                 end
-                if addon.ApplyFrameSizeAndPosition then
-                  addon.ApplyFrameSizeAndPosition()
+                if WB.ApplyFrameSizeAndPosition then
+                  WB.ApplyFrameSizeAndPosition()
                 end
               end,
             },
@@ -746,8 +746,8 @@ local options = {
                 SnapComboPointsDB.autoDetectCDM = value and true or false
                 -- clear cached candidate to force fresh detection
                 SnapComboPointsDB.autoSizeCDMName = ""
-                if addon.ApplyFrameSizeAndPosition then
-                  addon.ApplyFrameSizeAndPosition()
+                if WB.ApplyFrameSizeAndPosition then
+                  WB.ApplyFrameSizeAndPosition()
                 end
               end,
             },
@@ -762,8 +762,8 @@ local options = {
                 SnapComboPointsDB.autoSizeUseArcUI = value and true or false
                 -- clear cached candidate when changing ArcUI preference
                 SnapComboPointsDB.autoSizeCDMName = ""
-                if addon.ApplyFrameSizeAndPosition then
-                  addon.ApplyFrameSizeAndPosition()
+                if WB.ApplyFrameSizeAndPosition then
+                  WB.ApplyFrameSizeAndPosition()
                 end
               end,
             },
@@ -778,8 +778,8 @@ local options = {
               set = function(_, value)
                 if not SnapComboPointsDB then return end
                 SnapComboPointsDB.autoSizeInterval = tonumber(value) or 0.25
-                if addon.ApplyFrameSizeAndPosition then
-                  addon.ApplyFrameSizeAndPosition()
+                if WB.ApplyFrameSizeAndPosition then
+                  WB.ApplyFrameSizeAndPosition()
                 end
               end,
             },
@@ -799,8 +799,8 @@ local options = {
               set = function(_, value)
                 if not SnapComboPointsDB then return end
                 SnapComboPointsDB.showCount = value and true or false
-                if addon.UpdateComboDisplay then
-                  addon.UpdateComboDisplay()
+                if WB.UpdateComboDisplay then
+                  WB.UpdateComboDisplay()
                 end
               end,
             },
@@ -825,11 +825,11 @@ local options = {
               set = function(_, value)
                 if not SnapComboPointsDB then return end
                 SnapComboPointsDB.countFontSize = value
-                if addon.ApplyFrameStyle then
-                  addon.ApplyFrameStyle()
+                if WB.ApplyFrameStyle then
+                  WB.ApplyFrameStyle()
                 end
-                if addon.UpdateComboDisplay then
-                  addon.UpdateComboDisplay()
+                if WB.UpdateComboDisplay then
+                  WB.UpdateComboDisplay()
                 end
               end,
             },
@@ -845,11 +845,11 @@ local options = {
               set = function(_, r, g, b, a)
                 if not SnapComboPointsDB then return end
                 SnapComboPointsDB.countColor = { r, g, b, a or 1 }
-                if addon.ApplyFrameStyle then
-                  addon.ApplyFrameStyle()
+                if WB.ApplyFrameStyle then
+                  WB.ApplyFrameStyle()
                 end
-                if addon.UpdateComboDisplay then
-                  addon.UpdateComboDisplay()
+                if WB.UpdateComboDisplay then
+                  WB.UpdateComboDisplay()
                 end
               end,
             },
@@ -869,8 +869,8 @@ local options = {
               set = function(_, value)
                 if not SnapComboPointsDB then return end
                 SnapComboPointsDB.showEnergyCount = value and true or false
-                if addon.UpdateEnergyDisplay then
-                  addon.UpdateEnergyDisplay()
+                if WB.UpdateEnergyDisplay then
+                  WB.UpdateEnergyDisplay()
                 end
               end,
             },
@@ -895,11 +895,11 @@ local options = {
               set = function(_, value)
                 if not SnapComboPointsDB then return end
                 SnapComboPointsDB.energyCountFontSize = value
-                if addon.ApplyFrameStyle then
-                  addon.ApplyFrameStyle()
+                if WB.ApplyFrameStyle then
+                  WB.ApplyFrameStyle()
                 end
-                if addon.UpdateEnergyDisplay then
-                  addon.UpdateEnergyDisplay()
+                if WB.UpdateEnergyDisplay then
+                  WB.UpdateEnergyDisplay()
                 end
               end,
             },
@@ -915,11 +915,11 @@ local options = {
               set = function(_, r, g, b, a)
                 if not SnapComboPointsDB then return end
                 SnapComboPointsDB.energyCountColor = { r, g, b, a or 1 }
-                if addon.ApplyFrameStyle then
-                  addon.ApplyFrameStyle()
+                if WB.ApplyFrameStyle then
+                  WB.ApplyFrameStyle()
                 end
-                if addon.UpdateEnergyDisplay then
-                  addon.UpdateEnergyDisplay()
+                if WB.UpdateEnergyDisplay then
+                  WB.UpdateEnergyDisplay()
                 end
               end,
             },
@@ -933,7 +933,7 @@ local options = {
 local function EnsureOptionsPanel()
   if optionsRegistered then return end
   AceConfig:RegisterOptionsTable("Wangbar", options)
-  optionsPanel = AceConfigDialog:AddToBlizOptions("Wangbar", addon.ADDON_TITLE or "Wangbar")
+  optionsPanel = AceConfigDialog:AddToBlizOptions("Wangbar", WB.ADDON_TITLE or "Wangbar")
   optionsRegistered = true
 end
 
@@ -942,8 +942,8 @@ local function OpenOptionsPanel()
   AceConfigDialog:Open("Wangbar")
 end
 
-addon.OpenOptionsPanel = OpenOptionsPanel
-addon.EnsureOptionsPanel = EnsureOptionsPanel
+WB.OpenOptionsPanel = OpenOptionsPanel
+WB.EnsureOptionsPanel = EnsureOptionsPanel
 
 if C_Timer and C_Timer.After then
   C_Timer.After(0, EnsureOptionsPanel)

@@ -1,4 +1,4 @@
-local _, addon = ...
+local _, WB = ...
 
 local AceGUI = LibStub("AceGUI-3.0", true)
 if not AceGUI then
@@ -53,8 +53,8 @@ local function CreateEditModePanel()
   optionsBtn:SetText("More Options")
   optionsBtn:SetWidth(120)
   optionsBtn:SetCallback("OnClick", function()
-    if addon.OpenOptionsPanel then
-      addon.OpenOptionsPanel()
+    if WB.OpenOptionsPanel then
+      WB.OpenOptionsPanel()
     end
   end)
 
@@ -64,11 +64,11 @@ local function CreateEditModePanel()
   matchCdmBtn:SetText("Match CDM Width")
   matchCdmBtn:SetWidth(140)
   matchCdmBtn:SetCallback("OnClick", function()
-    if addon.ForceApplyCDMWidth then
-      addon.ForceApplyCDMWidth()
-      if addon.ApplyFrameStyle then addon.ApplyFrameStyle() end
-      if addon.UpdateComboDisplay then addon.UpdateComboDisplay() end
-      if addon.UpdateEnergyDisplay then addon.UpdateEnergyDisplay() end
+    if WB.ForceApplyCDMWidth then
+      WB.ForceApplyCDMWidth()
+      if WB.ApplyFrameStyle then WB.ApplyFrameStyle() end
+      if WB.UpdateComboDisplay then WB.UpdateComboDisplay() end
+      if WB.UpdateEnergyDisplay then WB.UpdateEnergyDisplay() end
     end
   end)
   btnGroup:AddChild(matchCdmBtn)
@@ -85,14 +85,14 @@ local function CreateEditModePanel()
   end
 
   local function ApplyLayoutChange(rebuild)
-    addon.ApplyFrameSizeAndPosition()
+    WB.ApplyFrameSizeAndPosition()
     if rebuild then
-      local comboPowerType = addon.GetSecondaryType()
-      addon.LayoutBars(UnitPowerMax("player", comboPowerType) or 0)
+      local comboPowerType = WB.GetSecondaryType()
+      WB.LayoutBars(UnitPowerMax("player", comboPowerType) or 0)
     end
-    addon.ApplyFrameStyle()
-    addon.UpdateComboDisplay()
-    addon.UpdateEnergyDisplay()
+    WB.ApplyFrameStyle()
+    WB.UpdateComboDisplay()
+    WB.UpdateEnergyDisplay()
   end
 
   local function MakeNumberRow(parent, label, minValue, maxValue, step, getValue, setValue, rebuild, arrowRotation)
@@ -257,10 +257,10 @@ local function CreateEditModePanel()
   scroll:AddChild(texGroup)
 
   local function EnsureTextureList(state)
-    if addon.InitLSM then
-      addon.InitLSM()
+    if WB.InitLSM then
+      WB.InitLSM()
     end
-    local list = addon.GetStatusbarList and addon.GetStatusbarList() or {}
+    local list = WB.GetStatusbarList and WB.GetStatusbarList() or {}
     state.textureList = list
     local values = {}
     for i = 1, #list do
@@ -282,17 +282,17 @@ local function CreateEditModePanel()
 
   local function ApplyTextureSelection(state, name)
     if not name or name == "" then return end
-    local path = addon.FetchStatusbar and addon.FetchStatusbar(name) or nil
+    local path = WB.FetchStatusbar and WB.FetchStatusbar(name) or nil
     SnapComboPointsDB.textureName = name
     SnapComboPointsDB.energyTextureName = name
-    if addon.ApplyComboTexture then
-      addon.ApplyComboTexture(path)
+    if WB.ApplyComboTexture then
+      WB.ApplyComboTexture(path)
     end
-    if addon.ApplyEnergyTexture then
-      addon.ApplyEnergyTexture(path)
+    if WB.ApplyEnergyTexture then
+      WB.ApplyEnergyTexture(path)
     end
-    if addon.UpdateComboDisplay then addon.UpdateComboDisplay() end
-    if addon.UpdateEnergyDisplay then addon.UpdateEnergyDisplay() end
+    if WB.UpdateComboDisplay then WB.UpdateComboDisplay() end
+    if WB.UpdateEnergyDisplay then WB.UpdateEnergyDisplay() end
     texDrop:SetValue(name)
   end
 
@@ -323,8 +323,8 @@ local function CreateEditModePanel()
   editPanel.Hide = function(self) self.frame:Hide() end
   editPanel.IsShown = function(self) return self.frame:IsShown() end
 
-  addon.editPanel = editPanel
-  addon.ApplyFrameSizeAndPosition()
+  WB.editPanel = editPanel
+  WB.ApplyFrameSizeAndPosition()
   UpdateEditPanelFields()
   EnsureTextureList(editPanel)
   UpdateTextureLabel(editPanel)
@@ -332,5 +332,5 @@ local function CreateEditModePanel()
   frame:DoLayout()
 end
 
-addon.CreateEditModePanel = CreateEditModePanel
-addon.UpdateEditPanelFields = UpdateEditPanelFields
+WB.CreateEditModePanel = CreateEditModePanel
+WB.UpdateEditPanelFields = UpdateEditPanelFields

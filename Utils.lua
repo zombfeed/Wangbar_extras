@@ -1,4 +1,4 @@
-local _, addon = ...
+local _, WB = ...
 
 CLASSWITHSECONDARY = {
   ["DEATHKNIGHT"] = true,
@@ -24,12 +24,12 @@ SPECWITHSECONDARY = {
 
 
 -- Merge defaults into a table recursively.
-function addon.CopyDefaults(dst, src)
+function WB.CopyDefaults(dst, src)
   if dst == nil then dst = {} end
   for k, v in pairs(src) do
     if type(v) == "table" then
       if type(dst[k]) ~= "table" then dst[k] = {} end
-      addon.CopyDefaults(dst[k], v)
+      WB.CopyDefaults(dst[k], v)
     elseif dst[k] == nil then
       dst[k] = v
     end
@@ -37,7 +37,7 @@ function addon.CopyDefaults(dst, src)
   return dst
 end
 
-function addon.HasSecondaryPower()
+function WB.HasSecondaryPower()
   local class = select(2, UnitClass("player"))
   if CLASSWITHSECONDARY[class] then
     if class == "ROGUE" or class == "EVOKER" or class == "DEATHKNIGHT" or class == "WARLOCK" or class == "PALADIN" then

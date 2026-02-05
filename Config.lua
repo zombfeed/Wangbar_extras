@@ -1,6 +1,6 @@
-local _, addon = ...
+local _, WB = ...
 
-addon.defaults = {
+WB.defaults = {
   point = "CENTER",
   relPoint = "CENTER",
   x = 0,

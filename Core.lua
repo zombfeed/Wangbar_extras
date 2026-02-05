@@ -1,20 +1,20 @@
-local ADDON_NAME, addon = ...
-addon = addon or {}
+local ADDON_NAME, WB = ...
+WB = WB or {}
 local ADDON_TITLE = "Wangbar"
 local ADDON_PREFIX = "|cff00ff88Wangbar|r"
-addon.ADDON_TITLE = ADDON_TITLE
+WB.ADDON_TITLE = ADDON_TITLE
 local f = CreateFrame("Frame", "SnapComboPointsFrame", UIParent, "BackdropTemplate")
 local energyBorder = CreateFrame("Frame", "SnapEnergyBorder", UIParent, "BackdropTemplate")
 local energyBar = CreateFrame("StatusBar", "SnapEnergyBar", energyBorder)
 local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
 
-addon.frames = {
+WB.frames = {
   comboFrame = f,
   energyBorder = energyBorder,
   energyBar = energyBar,
 }
 
-local defaults = addon.defaults
+local defaults = WB.defaults
 
 local bars = {}
 local lastAppliedWidth = nil
@@ -22,15 +22,6 @@ local unlocked = false
 local editModeActive = false
 local editModeHooked = false
 local debugPanelVisible = false
-local UpdateComboDisplay
-local UpdateEnergyDisplay
-local InitLSM
-local ApplyFrameStyle
-local InitMinimapButton
-local ToggleDebugPanel
-local CreateEditModePanel
-local UpdateEditPanelFields
-local ApplyFrameSizeAndPosition
 
 -- Autosize watcher for external cooldown manager (e.g. EssentialCooldownViewer)
 local autosizeWatcher = nil
@@ -325,8 +316,8 @@ local function ApplyWidthFromCDM(width)
   energyBorder:SetWidth(width)
   lastAppliedWidth = width
   local comboPowerType = nil
-  if addon.GetSecondaryType then
-    comboPowerType = addon.GetSecondaryType()
+  if WB.GetSecondaryType then
+    comboPowerType = WB.GetSecondaryType()
   elseif GetSecondaryType then
     comboPowerType = GetSecondaryType()
   end
@@ -335,10 +326,8 @@ local function ApplyWidthFromCDM(width)
     maxPower = UnitPowerMax("player", comboPowerType) or 0
   end
   if maxPower > 0 then
-    if addon.LayoutBars then
-      addon.LayoutBars(maxPower)
-    elseif LayoutBars then
-      LayoutBars(maxPower)
+    if WB.LayoutBars then
+      WB.LayoutBars(maxPower)
     end
   end
 end
@@ -360,7 +349,7 @@ local function StartAutoSizeWatcher()
   -- also try to attach a size-change listener for immediate updates
   pcall(AttachCDMSizeListener)
 end
-
+ 
 local function StopAutoSizeWatcher()
   if not autosizeWatcher then return end
   autosizeWatcher:SetScript("OnUpdate", nil)
@@ -394,7 +383,7 @@ local function StopAnchorFollower()
 end
 
 -- Public helper to force one-time width sync from detected CDM
-addon.ForceApplyCDMWidth = function()
+WB.ForceApplyCDMWidth = function()
   if type(GetCDMWidth) ~= "function" or type(ApplyWidthFromCDM) ~= "function" then return end
   local w = GetCDMWidth()
   if w and w > 0 then
@@ -413,15 +402,15 @@ local editButton
 
 -- Open the addon options panel.
 local function OpenOptionsPanel()
-  if addon.OpenOptionsPanel then
-    addon.OpenOptionsPanel()
+  if WB.OpenOptionsPanel then
+    WB.OpenOptionsPanel()
   else
     Print("Options panel unavailable.")
   end
 end
 
 -- Create/register the minimap button (LibDBIcon or fallback).
-InitMinimapButton = function()
+function WB:InitMinimapButton()
   if minimapInitialized then return end
   if not LibStub then return end
   local LDB = LibStub("LibDataBroker-1.1", true)
@@ -529,7 +518,7 @@ InitMinimapButton = function()
 end
 
 -- Toggle the edit/debug panel and edit mode.
-ToggleDebugPanel = function()
+function WB:ToggleDebugPanel()
   Print("/arrbpanel invoked")
   debugPanelVisible = not debugPanelVisible
   if debugPanelVisible then
@@ -553,14 +542,14 @@ ToggleDebugPanel = function()
     elseif EditModeManagerFrame and EditModeManagerFrame.Hide then
       EditModeManagerFrame:Hide()
     end
-    if addon.editPanel then addon.editPanel:Hide() end
+    if WB.editPanel then WB.editPanel:Hide() end
     Print("Panel hidden (debug).")
   end
 end
 
 local function ShowEditPanel()
   CreateEditModePanel()
-  local panel = addon.editPanel
+  local panel = WB.editPanel
   if panel then
     panel:Show()
     panel:SetAlpha(1)
@@ -591,8 +580,8 @@ local function ShowEditPanel()
 end
 
 -- Export functions so other modules (options) can open the edit panel.
-addon.ShowEditPanel = ShowEditPanel
-addon.ToggleDebugPanel = ToggleDebugPanel
+WB.ShowEditPanel = ShowEditPanel
+WB.ToggleDebugPanel = ToggleDebugPanel
 
 local function EnsureEditButton()
   if editButton then return end
@@ -629,7 +618,7 @@ for i = 1, #fallbackBackgrounds do
 end
 
 -- Initialize LibSharedMedia if available.
-InitLSM = function()
+function WB:InitLSM()
   if not LSM and LibStub then
     LSM = LibStub("LibSharedMedia-3.0", true)
   end
@@ -645,8 +634,8 @@ local function CopyList(src)
 end
 
 -- ---------- Utils ----------
-local CopyDefaults = addon.CopyDefaults
-local HasSecondary = addon.HasSecondaryPower()
+local CopyDefaults = WB.CopyDefaults
+local HasSecondary = WB.HasSecondaryPower()
 
 -- Resolve the primary power type.
 local function GetPrimaryType()
@@ -701,9 +690,9 @@ local function ShouldShow()
   return HasSecondary
 end
 
-UpdateEditPanelFields = function()
-  if addon.UpdateEditPanelFields then
-    addon.UpdateEditPanelFields()
+function WB:UpdateEditPanelFields()
+  if WB.UpdateEditPanelFields then
+    WB.UpdateEditPanelFields()
   end
 end
 
@@ -719,7 +708,7 @@ local function ClearBars()
 end
 
 -- Rebuild the combo point bars for a given max.
-local function LayoutBars(maxPower)
+function WB:LayoutBars(maxPower)
   ClearBars()
 
   local inset = 1
@@ -787,7 +776,7 @@ end
 
 
 -- Apply colors, borders, and text styles.
-ApplyFrameStyle = function()
+function WB:ApplyFrameStyle()
   local bg = SnapComboPointsDB.bg
   local border = SnapComboPointsDB.border
   local bgAlpha = bg and bg[4] or 0
@@ -867,7 +856,7 @@ ApplyFrameStyle = function()
 end
 
 -- Get the list of statusbar textures.
-local function GetStatusbarList()
+function WB:GetStatusbarList()
   if LSM and LSM.List then
     local list = LSM:List("statusbar")
     if list and #list > 0 then
@@ -909,7 +898,7 @@ local function FetchBackground(name)
 end
 
 -- Fetch a statusbar texture path by name.
-local function FetchStatusbar(name)
+function WB:FetchStatusbar(name)
   if LSM and LSM.Fetch then
     return LSM:Fetch("statusbar", name)
   end
@@ -917,7 +906,7 @@ local function FetchStatusbar(name)
 end
 
 -- Apply the combo bar texture to all pips.
-local function ApplyComboTexture(path)
+function WB:ApplyComboTexture(path)
   if not path then return end
   SnapComboPointsDB.texture = path
   for i = 1, #bars do
@@ -928,26 +917,17 @@ local function ApplyComboTexture(path)
 end
 
 -- Apply the energy bar texture.
-local function ApplyEnergyTexture(path)
+function WB:ApplyEnergyTexture(path)
   if not path then return end
   SnapComboPointsDB.energyTexture = path
   energyBar:SetStatusBarTexture(path)
 end
 
-addon.GetStatusbarList = GetStatusbarList
-addon.FetchStatusbar = FetchStatusbar
-addon.ApplyComboTexture = ApplyComboTexture
-addon.ApplyEnergyTexture = ApplyEnergyTexture
-
 -- Apply frame size/position from saved settings.
-ApplyFrameSizeAndPosition = function()
-  addon.ApplyFrameSizeAndPosition = ApplyFrameSizeAndPosition
-  addon.LayoutBars = LayoutBars
-  addon.InitLSM = InitLSM
-  addon.GetLSM = function() return LSM end
+function WB:ApplyFrameSizeAndPosition()
+  WB.GetLSM = function() return LSM end
 
-  addon.GetSecondaryType = GetSecondaryType
-  addon.InitMinimapButton = InitMinimapButton
+  WB.GetSecondaryType = GetSecondaryType
   local width = tonumber(SnapComboPointsDB.width) or defaults.width
   local height = tonumber(SnapComboPointsDB.height) or defaults.height
   -- If anchoring is enabled and we haven't initialized it for this profile yet,
@@ -1027,14 +1007,14 @@ ApplyFrameSizeAndPosition = function()
   local maxPower = UnitPowerMax("player", comboPowerType) or 0
   if lastAppliedWidth ~= width and maxPower > 0 then
     lastAppliedWidth = width
-    LayoutBars(maxPower)
+    WB:LayoutBars(maxPower)
   end
 end
 
 -- Create the edit mode panel if needed.
-CreateEditModePanel = function()
-  if addon.CreateEditModePanel then
-    addon.CreateEditModePanel()
+function WB:CreateEditModePanel()
+  if WB.CreateEditModePanel then
+    WB.CreateEditModePanel()
   end
 end
 
@@ -1061,7 +1041,7 @@ end
 
 
 -- Update combo point bar visibility and colors.
-UpdateComboDisplay = function()
+function WB:UpdateComboDisplay()
   if not ShouldShow() then
     f:Hide()
     energyBorder:Hide()
@@ -1078,7 +1058,7 @@ UpdateComboDisplay = function()
   end
 
   if #bars ~= maxPower then
-    LayoutBars(maxPower)
+    WB.LayoutBars(maxPower)
   end
 
   local cr, cg, cb, ca = unpack(SnapComboPointsDB.color)
@@ -1200,7 +1180,7 @@ end
 
 
 -- Update energy bar visibility and values.
-UpdateEnergyDisplay = function()
+function WB:UpdateEnergyDisplay()
   if not ShouldShow() then
     energyBorder:Hide()
     return
@@ -1243,16 +1223,10 @@ UpdateEnergyDisplay = function()
   energyBar:Show()
 end
 
-addon.UpdateComboDisplay = UpdateComboDisplay
-addon.UpdateEnergyDisplay = UpdateEnergyDisplay
-addon.ApplyFrameStyle = ApplyFrameStyle
-addon.ApplyFrameSizeAndPosition = ApplyFrameSizeAndPosition
-addon.LayoutBars = LayoutBars
-addon.InitLSM = InitLSM
-addon.GetLSM = function() return LSM end
-addon.GetSecondaryType = GetSecondaryType
-addon.GetMaxComboPoints = GetMaxComboPoints
-addon.InitMinimapButton = InitMinimapButton
+
+WB.GetLSM = function() return LSM end
+WB.GetSecondaryType = GetSecondaryType
+WB.GetMaxComboPoints = GetMaxComboPoints
 
 -- ---------- Drag / slash commands ----------
 -- Enable/disable drag to move the bar.
@@ -1281,7 +1255,7 @@ local function SetUnlocked(state, suppressPrint)
       SnapComboPointsDB.relPoint = relPoint
       SnapComboPointsDB.x = math.floor(x + 0.5)
       SnapComboPointsDB.y = math.floor(y + 0.5)
-      if addon.editPanel and addon.editPanel:IsShown() then
+      if WB.editPanel and WB.editPanel:IsShown() then
         UpdateEditPanelFields()
       end
       Print("Saved position.")
@@ -1319,7 +1293,7 @@ local function SyncEditMode()
   if active then
     CreateEditModePanel()
     UpdateEditPanelFields()
-    local panel = addon.editPanel
+    local panel = WB.editPanel
     if panel then
       panel.EnsureTextureList(panel)
       panel.textureTarget = "combo"
@@ -1334,8 +1308,8 @@ local function SyncEditMode()
     editButton:Show()
   else
     debugPanelVisible = false
-    if addon.editPanel then
-      addon.editPanel:Hide()
+    if WB.editPanel then
+      WB.editPanel:Hide()
     end
     if editButton then
       editButton:Hide()
@@ -1375,10 +1349,10 @@ f:SetScript("OnEvent", function(self, event, ...)
       SnapComboPointsDB = CopyDefaults(AwangsRogueResourceBarDB, defaults)
       AwangsRogueResourceBarDB = SnapComboPointsDB
 
-      InitLSM()
+      WB.InitLSM()
 
-      ApplyFrameStyle()
-      ApplyFrameSizeAndPosition()
+      WB.ApplyFrameStyle()
+      WB.ApplyFrameSizeAndPosition()
       SetUnlocked(false)
 
       -- Register events after init
@@ -1398,23 +1372,23 @@ f:SetScript("OnEvent", function(self, event, ...)
 
       HookEditModeManager()
       SyncEditMode()
-      UpdateComboDisplay()
-      UpdateEnergyDisplay()
+      WB.UpdateComboDisplay()
+      WB.UpdateEnergyDisplay()
       return
     end
 
     -- Another addon loaded; LSM might be available now
-    InitLSM()
-    if addon.editPanel and addon.editPanel.EnsureTextureList then
-      addon.editPanel.EnsureTextureList(addon.editPanel)
-      addon.editPanel.SelectTextureByName(addon.editPanel, SnapComboPointsDB.textureName)
+    WB.InitLSM()
+    if WB.editPanel and WB.editPanel.EnsureTextureList then
+      WB.editPanel.EnsureTextureList(WB.editPanel)
+      WB.editPanel.SelectTextureByName(WB.editPanel, SnapComboPointsDB.textureName)
     end
     return
   end
 
   if event == "PLAYER_ENTERING_WORLD" then
     if not minimapInitialized then
-      C_Timer.After(0, InitMinimapButton)
+      C_Timer.After(0, WB.InitMinimapButton)
     end
     HookEditModeManager()
     SyncEditMode()
@@ -1424,8 +1398,8 @@ f:SetScript("OnEvent", function(self, event, ...)
 
   if event == "UPDATE_SHAPESHIFT_COOLDOWN" or event == "PLAYER_SPECIALIZATION_CHANGED"
   or event == "RUNE_POWER_UPDATE" or event == "RUNE_TYPE_UPDATE" then
-    HasSecondary = addon.HasSecondaryPower()
-    UpdateComboDisplay()
+    HasSecondary = WB.HasSecondaryPower()
+    WB.UpdateComboDisplay()
   end
 
   if event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
@@ -1434,16 +1408,16 @@ f:SetScript("OnEvent", function(self, event, ...)
     -- Only redraw for combo points for performance + snappiness
     local _, comboPowerToken = GetSecondaryType()
     if powerType == comboPowerToken then
-      UpdateComboDisplay()
+      WB.UpdateComboDisplay()
     elseif powerType then
-      UpdateEnergyDisplay()
+      WB.UpdateEnergyDisplay()
     end
     return
   end
 
   -- Anything else that could change max/visibility/layout
-  UpdateComboDisplay()
-  UpdateEnergyDisplay()
+  WB.UpdateComboDisplay()
+  WB.UpdateEnergyDisplay()
 end)
 
 f:RegisterEvent("ADDON_LOADED")

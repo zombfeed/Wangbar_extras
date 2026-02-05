@@ -1,8 +1,8 @@
 
-local _, addon = ...
+local _, WB = ...
 
--- Cache of the current specialization ID for quick access elsewhere in the addon.
-addon._currentSpecId = nil
+-- Cache of the current specialization ID for quick access elsewhere in the WB.
+WB._currentSpecId = nil
 
 local function UpdateCurrentSpecId()
 	local specId = nil
@@ -26,20 +26,20 @@ local function UpdateCurrentSpecId()
 		end
 	end
 
-	addon._currentSpecId = specId
+	WB._currentSpecId = specId
 	return specId
 end
 
 -- Expose a simple getter for other modules
-addon.GetActiveSpecId = function()
-	return addon._currentSpecId or UpdateCurrentSpecId()
+WB.GetActiveSpecId = function()
+	return WB._currentSpecId or UpdateCurrentSpecId()
 end
 
-addon.GetHighComboThreshold = function()
+WB.GetHighComboThreshold = function()
 	return SnapComboPointsDB and SnapComboPointsDB.highComboPointsThreshold or 0
 end
 
-addon.IsHighComboEnabledForSpec = function()
+WB.IsHighComboEnabledForSpec = function()
 	return SnapComboPointsDB and SnapComboPointsDB.highComboEnabled
 end
 
