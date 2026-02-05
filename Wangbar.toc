@@ -23,5 +23,6 @@ Config.lua
 Utils.lua
 Options.lua
 EditPanel.lua
+Minimap.lua
 Core.lua
 Spec.lua

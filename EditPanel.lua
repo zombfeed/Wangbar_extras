@@ -1,4 +1,5 @@
 local _, WB = ...
+WB = WB or {}
 
 local AceGUI = LibStub("AceGUI-3.0", true)
 if not AceGUI then
@@ -7,7 +8,7 @@ end
 
 local editPanel
 
-local function UpdateEditPanelFields()
+function WB:UpdateEditPanelFields()
   if not editPanel or not editPanel.controls then return end
   editPanel.updating = true
   for _, ctrl in pairs(editPanel.controls) do
@@ -18,7 +19,7 @@ local function UpdateEditPanelFields()
   editPanel.updating = false
 end
 
-local function CreateEditModePanel()
+function WB:CreateEditModePanel()
   if editPanel then return end
 
   local frame = AceGUI:Create("Frame")
@@ -54,7 +55,7 @@ local function CreateEditModePanel()
   optionsBtn:SetWidth(120)
   optionsBtn:SetCallback("OnClick", function()
     if WB.OpenOptionsPanel then
-      WB.OpenOptionsPanel()
+      WB:OpenOptionsPanel()
     end
   end)
 
@@ -325,12 +326,9 @@ local function CreateEditModePanel()
 
   WB.editPanel = editPanel
   WB.ApplyFrameSizeAndPosition()
-  UpdateEditPanelFields()
+  WB:UpdateEditPanelFields()
   EnsureTextureList(editPanel)
   UpdateTextureLabel(editPanel)
 
   frame:DoLayout()
 end
-
-WB.CreateEditModePanel = CreateEditModePanel
-WB.UpdateEditPanelFields = UpdateEditPanelFields

@@ -195,6 +195,36 @@ local function BuildPerPointArgs()
   return args
 end
 
+-- Toggle the edit/debug panel and edit mode.
+function WB:ToggleDebugPanel()
+  WB:Print("/arrbpanel invoked")
+  debugPanelVisible = not debugPanelVisible
+  if debugPanelVisible then
+    if C_EditMode and C_EditMode.EnterEditMode then
+      C_EditMode.EnterEditMode()
+    elseif EditModeManagerFrame and EditModeManagerFrame.Show then
+      EditModeManagerFrame:Show()
+    end
+    WB:CreateEditModePanel()
+    WB.POWER_FRAME:Show()
+    WB.POWER_FRAME:SetAlpha(1)
+    if SnapComboPointsDB.energyEnabled ~= false then
+      WB.ENERGY_BORDER:Show()
+      WB.ENERGY_BORDER:SetAlpha(1)
+      WB.ENERGY_BAR:Show()
+    end
+    WB:Print("Panel shown (debug).")
+  else
+    if C_EditMode and C_EditMode.ExitEditMode then
+      C_EditMode.ExitEditMode()
+    elseif EditModeManagerFrame and EditModeManagerFrame.Hide then
+      EditModeManagerFrame:Hide()
+    end
+    if WB.editPanel then WB.editPanel:Hide() end
+    WB:Print("Panel hidden (debug).")
+  end
+end
+
 local options = {
   type = "group",
   name = WB.ADDON_TITLE or "Wangbar",
@@ -412,7 +442,7 @@ local options = {
           order = 996,
           func = function()
             if addon and WB.ToggleDebugPanel then
-              WB.ToggleDebugPanel()
+              WB:ToggleDebugPanel()
             elseif addon and WB.ShowEditPanel then
               WB.ShowEditPanel()
             else
@@ -930,23 +960,21 @@ local options = {
   },
 }
 
-local function EnsureOptionsPanel()
+function WB:EnsureOptionsPanel()
   if optionsRegistered then return end
   AceConfig:RegisterOptionsTable("Wangbar", options)
   optionsPanel = AceConfigDialog:AddToBlizOptions("Wangbar", WB.ADDON_TITLE or "Wangbar")
   optionsRegistered = true
 end
 
-local function OpenOptionsPanel()
-  EnsureOptionsPanel()
+function WB:OpenOptionsPanel()
+  WB.EnsureOptionsPanel()
   AceConfigDialog:Open("Wangbar")
 end
 
-WB.OpenOptionsPanel = OpenOptionsPanel
-WB.EnsureOptionsPanel = EnsureOptionsPanel
 
 if C_Timer and C_Timer.After then
-  C_Timer.After(0, EnsureOptionsPanel)
+  C_Timer.After(0, WB.EnsureOptionsPanel)
 else
   EnsureOptionsPanel()
 end

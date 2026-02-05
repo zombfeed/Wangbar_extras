@@ -3,9 +3,9 @@ WB = WB or {}
 local ADDON_TITLE = "Wangbar"
 local ADDON_PREFIX = "|cff00ff88Wangbar|r"
 WB.ADDON_TITLE = ADDON_TITLE
-local f = CreateFrame("Frame", "SnapComboPointsFrame", UIParent, "BackdropTemplate")
-local energyBorder = CreateFrame("Frame", "SnapEnergyBorder", UIParent, "BackdropTemplate")
-local energyBar = CreateFrame("StatusBar", "SnapEnergyBar", energyBorder)
+local f = WB.POWER_FRAME
+local energyBorder = WB.ENERGY_BORDER
+local energyBar = WB.ENERGY_BAR
 local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
 
 WB.frames = {
@@ -312,8 +312,8 @@ local function ApplyWidthFromCDM(width)
   if width < 1 then return end
   if lastAppliedWidth == width then return end
   SnapComboPointsDB.width = width
-  f:SetWidth(width)
-  energyBorder:SetWidth(width)
+  WB.POWER_FRAME:SetWidth(width)
+  WB.ENERGY_BORDER:SetWidth(width)
   lastAppliedWidth = width
   local comboPowerType = nil
   if WB.GetSecondaryType then
@@ -327,7 +327,7 @@ local function ApplyWidthFromCDM(width)
   end
   if maxPower > 0 then
     if WB.LayoutBars then
-      WB.LayoutBars(maxPower)
+      WB:LayoutBars(maxPower)
     end
   end
 end
@@ -383,7 +383,7 @@ local function StopAnchorFollower()
 end
 
 -- Public helper to force one-time width sync from detected CDM
-WB.ForceApplyCDMWidth = function()
+function WB:ForceApplyCDMWidth()
   if type(GetCDMWidth) ~= "function" or type(ApplyWidthFromCDM) ~= "function" then return end
   local w = GetCDMWidth()
   if w and w > 0 then
@@ -391,163 +391,25 @@ WB.ForceApplyCDMWidth = function()
   end
 end
 
--- Silence chat output.
-local function Print()
-end
 
-local minimapIcon
-local minimapButton
-local minimapInitialized = false
+
+
 local editButton
 
--- Open the addon options panel.
-local function OpenOptionsPanel()
-  if WB.OpenOptionsPanel then
-    WB.OpenOptionsPanel()
-  else
-    Print("Options panel unavailable.")
-  end
-end
+-- -- Open the addon options panel.
+-- function WB:OpenOptionsPanel()
+--   if WB.OpenOptionsPanel then
+--     WB:OpenOptionsPanel()
+--   else
+--     Print("Options panel unavailable.")
+--   end
+-- end
 
--- Create/register the minimap button (LibDBIcon or fallback).
-function WB:InitMinimapButton()
-  if minimapInitialized then return end
-  if not LibStub then return end
-  local LDB = LibStub("LibDataBroker-1.1", true)
-  local DBIcon = LibStub("LibDBIcon-1.0", true)
-  if not LDB or not DBIcon then
-    local function CreateFallbackMinimapButton()
-      if minimapButton then return end
-      minimapButton = CreateFrame("Button", "WangbarMinimapButton", Minimap)
-      minimapButton:SetSize(32, 32)
-      minimapButton:SetFrameStrata("MEDIUM")
-      minimapButton:SetFrameLevel(8)
 
-      minimapButton:SetNormalTexture("Interface\\Icons\\Ability_Rogue_SliceDice")
-      minimapButton:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-      minimapButton:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-      minimapButton:GetHighlightTexture():SetBlendMode("ADD")
 
-      local normal = minimapButton:GetNormalTexture()
-      normal:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 
-      minimapButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-      minimapButton:RegisterForDrag("LeftButton")
 
-      local function UpdatePosition()
-        local angle = SnapComboPointsDB.minimap.angle or 225
-        local radius = 80
-        local rad = math.rad(angle)
-        local x = 52 - radius * math.cos(rad)
-        local y = radius * math.sin(rad) - 52
-        minimapButton:SetPoint("TOPLEFT", Minimap, "TOPLEFT", x, y)
-      end
-
-      minimapButton:SetScript("OnDragStart", function()
-        minimapButton:SetScript("OnUpdate", function()
-          local mx, my = Minimap:GetCenter()
-          local cx, cy = GetCursorPosition()
-          local scale = Minimap:GetEffectiveScale()
-          cx, cy = cx / scale, cy / scale
-          local dx, dy = cx - mx, cy - my
-          local angle = math.deg(math.atan2(dy, dx))
-          SnapComboPointsDB.minimap.angle = angle
-          UpdatePosition()
-        end)
-      end)
-
-      minimapButton:SetScript("OnDragStop", function()
-        minimapButton:SetScript("OnUpdate", nil)
-      end)
-
-      minimapButton:SetScript("OnClick", function(_, button)
-        if button == "RightButton" then
-          ToggleDebugPanel()
-        else
-          OpenOptionsPanel()
-        end
-      end)
-
-      minimapButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:AddLine(ADDON_TITLE)
-        GameTooltip:AddLine("Left-click: Options", 1, 1, 1)
-        GameTooltip:AddLine("Right-click: Edit panel", 1, 1, 1)
-        GameTooltip:Show()
-      end)
-
-      minimapButton:SetScript("OnLeave", function()
-        GameTooltip:Hide()
-      end)
-
-      if SnapComboPointsDB.minimap.hide then
-        minimapButton:Hide()
-      else
-        minimapButton:Show()
-        UpdatePosition()
-      end
-      minimapInitialized = true
-    end
-
-    CreateFallbackMinimapButton()
-    return
-  end
-
-  if not minimapIcon then
-    minimapIcon = LDB:NewDataObject("Wangbar", {
-      type = "launcher",
-      text = ADDON_TITLE,
-      icon = "Interface\\Icons\\Ability_Rogue_SliceDice",
-      OnClick = function(_, button)
-        if button == "RightButton" then
-          ToggleDebugPanel()
-        else
-          OpenOptionsPanel()
-        end
-      end,
-      OnTooltipShow = function(tooltip)
-        tooltip:AddLine(ADDON_TITLE)
-        tooltip:AddLine("Left-click: Options", 1, 1, 1)
-        tooltip:AddLine("Right-click: Edit panel", 1, 1, 1)
-      end,
-    })
-  end
-
-  DBIcon:Register("Wangbar", minimapIcon, SnapComboPointsDB.minimap)
-  minimapInitialized = true
-end
-
--- Toggle the edit/debug panel and edit mode.
-function WB:ToggleDebugPanel()
-  Print("/arrbpanel invoked")
-  debugPanelVisible = not debugPanelVisible
-  if debugPanelVisible then
-    if C_EditMode and C_EditMode.EnterEditMode then
-      C_EditMode.EnterEditMode()
-    elseif EditModeManagerFrame and EditModeManagerFrame.Show then
-      EditModeManagerFrame:Show()
-    end
-    CreateEditModePanel()
-    f:Show()
-    f:SetAlpha(1)
-    if SnapComboPointsDB.energyEnabled ~= false then
-      energyBorder:Show()
-      energyBorder:SetAlpha(1)
-      energyBar:Show()
-    end
-    Print("Panel shown (debug).")
-  else
-    if C_EditMode and C_EditMode.ExitEditMode then
-      C_EditMode.ExitEditMode()
-    elseif EditModeManagerFrame and EditModeManagerFrame.Hide then
-      EditModeManagerFrame:Hide()
-    end
-    if WB.editPanel then WB.editPanel:Hide() end
-    Print("Panel hidden (debug).")
-  end
-end
-
-local function ShowEditPanel()
+function WB:ShowEditPanel()
   CreateEditModePanel()
   local panel = WB.editPanel
   if panel then
@@ -579,9 +441,6 @@ local function ShowEditPanel()
   end
 end
 
--- Export functions so other modules (options) can open the edit panel.
-WB.ShowEditPanel = ShowEditPanel
-WB.ToggleDebugPanel = ToggleDebugPanel
 
 local function EnsureEditButton()
   if editButton then return end
@@ -690,11 +549,11 @@ local function ShouldShow()
   return HasSecondary
 end
 
-function WB:UpdateEditPanelFields()
-  if WB.UpdateEditPanelFields then
-    WB.UpdateEditPanelFields()
-  end
-end
+-- function WB:UpdateEditPanelFields()
+--   if WB.UpdateEditPanelFields then
+--     WB.UpdateEditPanelFields()
+--   end
+-- end
 
 -- Clear all combo point bars.
 local function ClearBars()
@@ -1011,12 +870,12 @@ function WB:ApplyFrameSizeAndPosition()
   end
 end
 
--- Create the edit mode panel if needed.
-function WB:CreateEditModePanel()
-  if WB.CreateEditModePanel then
-    WB.CreateEditModePanel()
-  end
-end
+-- -- Create the edit mode panel if needed.
+-- function WB:CreateEditModePanel()
+--   if WB.CreateEditModePanel then
+--     WB.CreateEditModePanel()
+--   end
+-- end
 
 local function StartRuneOnUpdate(runeBar, runeIndex)
   runeBar.pip:SetScript("OnUpdate", function(self)
@@ -1058,7 +917,7 @@ function WB:UpdateComboDisplay()
   end
 
   if #bars ~= maxPower then
-    WB.LayoutBars(maxPower)
+    WB:LayoutBars(maxPower)
   end
 
   local cr, cg, cb, ca = unpack(SnapComboPointsDB.color)
@@ -1239,7 +1098,7 @@ local function SetUnlocked(state, suppressPrint)
   if state then
     f:SetScript("OnMouseUp", function(self, button)
       if button == "RightButton" and not editModeActive then
-        ToggleDebugPanel()
+        WB:ToggleDebugPanel()
       end
     end)
   else
@@ -1256,18 +1115,18 @@ local function SetUnlocked(state, suppressPrint)
       SnapComboPointsDB.x = math.floor(x + 0.5)
       SnapComboPointsDB.y = math.floor(y + 0.5)
       if WB.editPanel and WB.editPanel:IsShown() then
-        UpdateEditPanelFields()
+        WB:UpdateEditPanelFields()
       end
-      Print("Saved position.")
+      WB:Print("Saved position.")
     end)
     if not suppressPrint then
-      Print("Unlocked. Drag to move. /arrb lock when done.")
+      WB:Print("Unlocked. Drag to move. /arrb lock when done.")
     end
   else
     f:SetScript("OnDragStart", nil)
     f:SetScript("OnDragStop", nil)
     if not suppressPrint then
-      Print("Locked.")
+      WB:Print("Locked.")
     end
   end
 end
@@ -1291,8 +1150,8 @@ local function SyncEditMode()
   editModeActive = active
   SetUnlocked(active, true)
   if active then
-    CreateEditModePanel()
-    UpdateEditPanelFields()
+    WB:CreateEditModePanel()
+    WB:UpdateEditPanelFields()
     local panel = WB.editPanel
     if panel then
       panel.EnsureTextureList(panel)
@@ -1301,7 +1160,7 @@ local function SyncEditMode()
       if panel.UpdateTextureLabel then
         panel.UpdateTextureLabel(panel)
       end
-      ApplyFrameSizeAndPosition()
+      WB:ApplyFrameSizeAndPosition()
       f:Show()
     end
     EnsureEditButton()
@@ -1315,8 +1174,8 @@ local function SyncEditMode()
       editButton:Hide()
     end
   end
-  UpdateComboDisplay()
-  UpdateEnergyDisplay()
+  WB:UpdateComboDisplay()
+  WB:UpdateEnergyDisplay()
 end
 
 -- Hook edit mode show/hide events.
@@ -1334,7 +1193,7 @@ SLASH_WANG1 = "/wang"
 SLASH_WANG2 = "/wangbar"
 SLASH_WANG3 = "/wb"
 SlashCmdList.WANG = function()
-  OpenOptionsPanel()
+  WB:OpenOptionsPanel()
 end
 
 -- ---------- Events ----------

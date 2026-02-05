@@ -1,5 +1,9 @@
 local _, WB = ...
 
+WB.POWER_FRAME = CreateFrame("Frame", "SnapComboPointsFrame", UIParent, "BackdropTemplate")
+WB.ENERGY_BORDER = CreateFrame("Frame", "SnapEnergyBorder", UIParent, "BackdropTemplate")
+WB.ENERGY_BAR = CreateFrame("StatusBar", "SnapEnergyBar", WB.ENERGY_BORDER)
+
 CLASSWITHSECONDARY = {
   ["DEATHKNIGHT"] = true,
   ["DRUID"] = true,
@@ -22,6 +26,9 @@ SPECWITHSECONDARY = {
   [258]   = true,     -- Shadow
 }
 
+-- Silence chat output.
+function WB:Print()
+end
 
 -- Merge defaults into a table recursively.
 function WB.CopyDefaults(dst, src)
